@@ -1,10 +1,14 @@
 import socket
 import time
 import os
+from common import MESSAGE_DIVISOR
+
+from operations import Operations,  operation_message
 
 # Diretórios para armazenar o estado do relógio lógico do cliente e transferencias
 CLIENT_STATES_DIR = "client_states"
 TRANFERS_DIR = "transfers"
+
 
 # Relógio lógico do cliente
 lamport_clock = 0
@@ -74,13 +78,26 @@ def start_client():
         lamport_clock += 1
 
         # Obtém a string do usuário
-        message = input("Enter a string to send to the server (or 'exit' to quit): ")
-
-        if message.lower() == 'exit':
+        message = input("Qual operação você deseja realizar? Digite 1 para depositar, 2 para sacar, 3 para transferir ou 'sair' para sair: \n")
+        
+        if message.lower() == 'sair':
             break
+        
+        try:
+            # Obtém a operação selecionada pelo usuário
+            operation = int(message)
+            selected_operation = Operations(operation)
+
+            # Obtém a mensagem da operação selecionada pelo usuário
+            operation_message_input =  operation_message(selected_operation)
+            value = input(operation_message_input)
+          
+        except:   
+            print("Operação inválida, tente novamente.\n")
+            continue
 
         # Envia a string com o relógio lógico para o servidor
-        message_with_clock = f"{message} | {lamport_clock}"
+        message_with_clock = f"{operation} {MESSAGE_DIVISOR} {value} {MESSAGE_DIVISOR} {lamport_clock}"
         client_socket.send(message_with_clock.encode('utf-8'))
 
         # Aguarda um curto período para simular o atraso na rede

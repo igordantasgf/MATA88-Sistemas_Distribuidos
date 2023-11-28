@@ -27,11 +27,7 @@ class Banco:
             writer.writeheader()
             writer.writerows(user_data)
 
-    def deposit_money(username, amount):
-        # Ensure the CSV file exists
-        if not os.path.exists('user_data.csv'):
-            Banco.create_user_data_file()
-
+    def update_money(_, username, amount):
         # Read user data
         user_data =  Banco.read_user_data()
 
@@ -40,7 +36,7 @@ class Banco:
 
         if user_index is not None:
             # Update user balance
-            user_data[user_index]['balance'] = str(float(user_data[user_index]['balance']) + amount)
+            user_data[user_index]['balance'] = str(float(user_data[user_index]['balance']) + float(amount))
         else:
             # If user not found, create a new entry
             new_user = {'username': username, 'balance': str(amount)}
@@ -49,4 +45,4 @@ class Banco:
         # Write the updated user data back to the CSV file
         Banco.write_user_data(user_data)
 
-        print(f"Deposit successful. New balance for {username}: {user_data[-1]['balance']}")
+        print(f"Update successfully. New balance for {username}: {user_data[-1]['balance']}")

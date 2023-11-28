@@ -81,9 +81,14 @@ def handle_client(client_socket, client_address, client_id):
             banco = Banco()
 
             if received_data[0].strip() == '1':
-                banco.deposit_money(client_id, value)
+                banco.update_money(client_id, value)
+            elif received_data[0].strip() == '2':
+                banco.update_money(client_id, f'-{value}')
+            # elif received_data[0].strip() == '3':
+            #     banco.deposit_money(client_id, 'value')                
 
-        except:
+        except Exception as e:
+            print(e)
             # Handle the exception (e.g., print an error message)
             print(f"Algum erro aconteceu")
 

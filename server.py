@@ -19,11 +19,11 @@ client_states = {}
 # Relógio lógico do servidor
 lamport_clock = 0
 
-def save_clock_state(client_id):
+def save_clock_state(client_id, clock):
     # Salva o estado do relógio lógico do cliente em um arquivo
     state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
     with open(state_file_path, "w+") as file:
-        file.write(str(client_states[client_id]))
+        file.write(str(clock))
 
 def load_clock_state(client_id):
     state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
@@ -81,9 +81,8 @@ def handle_client(client_socket, client_address, client_id):
             # Handle the exception (e.g., print an error message)
             print(f"Algum erro aconteceu")
 
-
     # Salva o estado do relógio lógico do cliente antes de fechar a conexão
-    save_clock_state(client_id)
+    save_clock_state(client_id, client_lamport_clock)
 
     # Fecha a conexão com o cliente
     client_socket.close()

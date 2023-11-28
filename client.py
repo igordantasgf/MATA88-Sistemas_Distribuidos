@@ -14,14 +14,6 @@ TRANFERS_DIR = "transfers"
 lamport_clock = 0
 client_id = 0
 
-def save_clock_state():
-    print(f"Armazenando time={lamport_clock} no client {client_id}")
-
-    # Salva o estado do relógio lógico do cliente em um arquivo
-    state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
-    with open(state_file_path, "w") as file:
-        file.write(str(lamport_clock))
-
 def load_clock_state():
 
     # Initialization:   When the client starts, it initializes its logical clock. 
@@ -102,9 +94,6 @@ def start_client():
 
         # Aguarda um curto período para simular o atraso na rede
         time.sleep(0.1)
-
-    # Salva o estado do relógio lógico do cliente antes de fechar a conexão
-    save_clock_state()
 
     # Fecha a conexão com o servidor
     client_socket.close()

@@ -57,7 +57,7 @@ def start_client():
 
     # Configurações do cliente
     host = '127.0.0.1'
-    port = 1234
+    port = 12345
 
     # Cria um socket TCP
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

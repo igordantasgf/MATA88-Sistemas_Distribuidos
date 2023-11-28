@@ -1,40 +1,52 @@
 import csv
 import os
 
-def read_user_data():
-    # Read user data from the CSV file into a list of dictionaries
-    if not os.path.exists('user_data.csv'):
-        create_user_data_file()
+class Banco:
 
-    with open('user_data.csv', 'r', newline='') as file:
-        reader = csv.DictReader(file)
-        user_data = list(reader)
-    return user_data
+    def read_user_data():
+        # Read user data from the CSV file into a list of dictionaries
+        if not os.path.exists('user_data.csv'):
+            Banco.create_user_data_file()
 
-def create_user_data_file():
-    # Create the user data CSV file with header
-    with open('user_data.csv', 'w', newline='') as file:
-        fieldnames = ['username', 'balance']  # Adjust fieldnames based on your user data structure
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
+        with open('user_data.csv', 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            user_data = list(reader)
+        return user_data
 
-def write_user_data(user_data):
-    with open('user_data.csv', 'w', newline='') as file:
-        fieldnames = ['username', 'balance']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(user_data)
+    def create_user_data_file():
+        # Create the user data CSV file with header
+        with open('user_data.csv', 'w', newline='') as file:
+            fieldnames = ['username', 'balance']  # Adjust fieldnames based on your user data structure
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
 
-def deposit_money(username, amount):
-    user_data = read_user_data()
+    def write_user_data(user_data):
+        with open('user_data.csv', 'w', newline='') as file:
+            fieldnames = ['username', 'balance']
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(user_data)
 
-    user_index = next((index for (index, user) in enumerate(user_data) if user['username'] == username), None)
+    def deposit_money(username, amount):
+        # Ensure the CSV file exists
+        if not os.path.exists('user_data.csv'):
+            Banco.create_user_data_file()
 
-    if user_index is not None:
-        user_data[user_index]['balance'] = str(float(user_data[user_index]['balance']) + amount)
+        # Read user data
+        user_data =  Banco.read_user_data()
 
-        write_user_data(user_data)
+        # Find the user in the data
+        user_index = next((index for (index, user) in enumerate(user_data) if user['username'] == username), None)
 
-        print(f"Deposit successful. New balance for {username}: {user_data[user_index]['balance']}")
-    else:
-        print(f"User '{username}' not found.")
+        if user_index is not None:
+            # Update user balance
+            user_data[user_index]['balance'] = str(float(user_data[user_index]['balance']) + amount)
+        else:
+            # If user not found, create a new entry
+            new_user = {'username': username, 'balance': str(amount)}
+            user_data.append(new_user)
+
+        # Write the updated user data back to the CSV file
+        Banco.write_user_data(user_data)
+
+        print(f"Deposit successful. New balance for {username}: {user_data[-1]['balance']}")

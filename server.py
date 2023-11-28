@@ -3,7 +3,7 @@ import threading
 from datetime import datetime
 import time
 import os
-from banco import deposit_money
+from banco import Banco
 from common import MESSAGE_DIVISOR
 
 from operations import Operations, is_valid_operation
@@ -78,8 +78,10 @@ def handle_client(client_socket, client_address, client_id):
 
             operation, value = received_data[0].strip(), received_data[1].strip()
 
+            banco = Banco()
+
             if received_data[0].strip() == '1':
-                deposit_money(client_id, value)
+                banco.deposit_money(client_id, value)
 
         except:
             # Handle the exception (e.g., print an error message)
@@ -100,7 +102,7 @@ def start_server():
 
     # Configurações do servidor
     host = '127.0.0.1'
-    port = 1234
+    port = 12345
 
     # Cria um socket TCP
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

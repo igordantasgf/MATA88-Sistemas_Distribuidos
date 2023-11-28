@@ -3,6 +3,7 @@ import threading
 from datetime import datetime
 import time
 import os
+from banco import deposit_money
 from common import MESSAGE_DIVISOR
 
 from operations import Operations, is_valid_operation
@@ -66,8 +67,6 @@ def handle_client(client_socket, client_address, client_id):
                 print(f"Operação inválida, tente novamente")
                 continue
 
-
-
             # Atualiza o relógio lógico do servidor
             lamport_clock = max(lamport_clock, client_lamport_clock) + 1
 
@@ -76,6 +75,11 @@ def handle_client(client_socket, client_address, client_id):
             message_with_timestamp = f"{timestamp} | Lamport Clock: {lamport_clock} | {received_data[0].strip()}"
             messages.append(message_with_timestamp)
             print(f"Received: {message_with_timestamp} from {client_address}")
+
+            operation, value = received_data[0].strip(), received_data[1].strip()
+
+            if received_data[0].strip() == '1':
+                deposit_money(client_id, value)
 
         except:
             # Handle the exception (e.g., print an error message)
@@ -96,7 +100,7 @@ def start_server():
 
     # Configurações do servidor
     host = '127.0.0.1'
-    port = 12345
+    port = 1234
 
     # Cria um socket TCP
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -120,6 +124,8 @@ def start_server():
         # Inicia a thread do cliente
         client_handler = threading.Thread(target=handle_client, args=(client_socket, addr, client_id))
         client_handler.start()
+
+
 
 if __name__ == "__main__":
     start_server()

@@ -3,6 +3,7 @@ import threading
 from datetime import datetime
 import time
 import os
+from common import MESSAGE_DIVISOR
 
 from operations import Operations, is_valid_operation
 
@@ -50,7 +51,7 @@ def handle_client(client_socket, client_address, client_id):
                 break
                 
             # Decodifica a mensagem e separa o conteúdo da mensagem 
-            received_data = data.decode('utf-8').split("|")
+            received_data = data.decode('utf-8').split( MESSAGE_DIVISOR)
 
             # extrai o relógio lógico do cliente, sempre é enviado no final do conteúdo
             client_lamport_clock = int(received_data[-1].strip())

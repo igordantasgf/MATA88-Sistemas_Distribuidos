@@ -1,12 +1,14 @@
 import socket
 import time
 import os
+from common import MESSAGE_DIVISOR
 
 from operations import Operations,  operation_message
 
 # Diretórios para armazenar o estado do relógio lógico do cliente e transferencias
 CLIENT_STATES_DIR = "client_states"
 TRANFERS_DIR = "transfers"
+
 
 # Relógio lógico do cliente
 lamport_clock = 0
@@ -95,11 +97,11 @@ def start_client():
             continue
 
         # Envia a string com o relógio lógico para o servidor
-        message_with_clock = f"{operation} | {value} | {lamport_clock}"
+        message_with_clock = f"{operation} {MESSAGE_DIVISOR} {value} {MESSAGE_DIVISOR} {lamport_clock}"
         client_socket.send(message_with_clock.encode('utf-8'))
 
         # Aguarda um curto período para simular o atraso na rede
-        time.sleep(1)
+        time.sleep(0.1)
 
     # Salva o estado do relógio lógico do cliente antes de fechar a conexão
     save_clock_state()

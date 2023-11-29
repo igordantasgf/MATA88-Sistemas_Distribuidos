@@ -81,7 +81,7 @@ def start_client():
 
         # Obtém a string do usuário
         message = input(
-            "Qual operação você deseja realizar? Digite 1 para depositar, 2 para sacar, 3 para transferir ou 'sair' para sair: \n"
+            "Qual operação você deseja realizar? Digite 1 para depositar, 2 para sacar, 3 para transferir, 4 para checar o seu saldo ou 'sair' para sair: \n"
         )
 
         if message.lower() == "sair":
@@ -93,9 +93,12 @@ def start_client():
             selected_operation = Operations(operation)
 
             # Obtém a mensagem da operação selecionada pelo usuário
-            operation_message_input = operation_message(selected_operation)
-            value = input(operation_message_input)
-            recipient_account = None
+            if selected_operation == Operations.CHECK_BALANCE:
+                value = 0
+            else:
+                operation_message_input = operation_message(selected_operation)
+                value = input(operation_message_input)
+                recipient_account = None
 
             if selected_operation is Operations.TRANSFER:
                 recipient_account = input("Digite a conta do destinatário: ")
@@ -115,7 +118,6 @@ def start_client():
 
         # exibe o que foi enviado do servidor
         print(received_data[0].strip())
-        print("\n")
 
         # Aguarda um curto período para simular o atraso na rede
         time.sleep(0.1)

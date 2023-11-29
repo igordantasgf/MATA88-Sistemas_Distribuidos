@@ -40,8 +40,30 @@ class Bank:
                 return self.withdraw_money(client_id, amount)
             case Operations.TRANSFER:
                 return self.transfer_money(client_id, amount, recipient_account)
+            case Operations.CHECK_BALANCE:
+                return self.check_balance(client_id)
             case _:
                 return print("Operação inválida, tente novamente")
+
+    def check_balance(self, client_id):
+        # Read user data
+        user_data = self.read_user_data()
+
+        # Find the user in the data
+        user_index = next(
+            (
+                index
+                for (index, user) in enumerate(user_data)
+                if user["client_id"] == client_id
+            ),
+            None,
+        )
+
+        if user_index is not None:
+            balance = float(user_data[user_index]["balance"])
+            return f"Saldo disponível: {balance} reais"
+        else:
+            return "Conta do usuário não encontrada. Por favor, faça um depósito para abrir sua conta"
 
     def withdraw_money(self, client_id, amount):
         # Read user data

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from bank import Bank
 
-from common import MESSAGE_DIVISOR
+from common import MESSAGE_DIVISOR, RG_PATTERN, NAME_PATTERN
 from operations import Operations, is_valid_operation
 
 # Diretório para armazenar os estados dos relógios lógicos dos clientes
@@ -43,31 +43,50 @@ def handle_client(client_socket, client_address, client_id):
             # extrai o relógio lógico do cliente, sempre é enviado no final do conteúdo
             client_lamport_clock = int(received_data[-1].strip())
 
-            # extrai a operação
-            operation = int(received_data[0].strip())
-            if is_valid_operation(operation):
-                selected_operation = Operations(operation)
-                # Caso a operação seja válida extrai o valor da operação e a conta do destinário  em caso de transferência
-                value, recipient_account = (
-                    int(received_data[1].strip()),
-                    received_data[2].strip(),
-                )
+            bank = Bank()
 
-                bank = Bank()
+            # Checa no banco se o usuário existe
+            if  RG_PATTERN in received_data[0].strip():
+                user_rg =  received_data[0].split(RG_PATTERN)[-1].strip()
+                message = bank.check_user_exists(user_rg)
 
-                message = bank.perform_operation(
-                    client_id, selected_operation, value, recipient_account
-                )
+                # Adiciona a mensagem à lista com timestamp e relógio lógico de Lamport
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                message_with_timestamp = f"{message} {MESSAGE_DIVISOR} {timestamp} {MESSAGE_DIVISOR} Lamport Clock: {lamport_clock} {MESSAGE_DIVISOR}  | {received_data[0].strip()}"
+                messages.append(message_with_timestamp)
+                client_socket.send(message_with_timestamp.encode("utf-8"))
+                print(f"Received: {message_with_timestamp} from {client_address}")
+            
+            # Cria no banco caso não exista
+            elif NAME_PATTERN in received_data[0].strip():
+                user_name =  received_data[0].split(NAME_PATTERN)[-1].strip()
+                bank = bank.create_new_user(user_rg, user_name)
 
-            # Atualiza o relógio lógico do servidor
-            lamport_clock = max(lamport_clock, client_lamport_clock) + 1
+            else:
+                # extrai a operação
+                operation = int(received_data[0].strip())
+                if is_valid_operation(operation):
+                    selected_operation = Operations(operation)
+                    # Caso a operação seja válida extrai o valor da operação e a conta do destinário  em caso de transferência
+                    value, recipient_account = (
+                        int(received_data[1].strip()),
+                        received_data[2].strip(),
+                    )
 
-            # Adiciona a mensagem à lista com timestamp e relógio lógico de Lamport
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            message_with_timestamp = f"{message} {MESSAGE_DIVISOR} {timestamp} {MESSAGE_DIVISOR} Lamport Clock: {lamport_clock} {MESSAGE_DIVISOR}  | {received_data[0].strip()}"
-            messages.append(message_with_timestamp)
-            client_socket.send(message_with_timestamp.encode("utf-8"))
-            print(f"Received: {message_with_timestamp} from {client_address}")
+
+                    message = bank.perform_operation(
+                        user_rg, selected_operation, value, recipient_account
+                    )
+
+                # Atualiza o relógio lógico do servidor
+                lamport_clock = max(lamport_clock, client_lamport_clock) + 1
+
+                # Adiciona a mensagem à lista com timestamp e relógio lógico de Lamport
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                message_with_timestamp = f"{message} {MESSAGE_DIVISOR} {timestamp} {MESSAGE_DIVISOR} Lamport Clock: {lamport_clock} {MESSAGE_DIVISOR}  | {received_data[0].strip()}"
+                messages.append(message_with_timestamp)
+                client_socket.send(message_with_timestamp.encode("utf-8"))
+                print(f"Received: {message_with_timestamp} from {client_address}")
 
         except Exception as e:
             print(e)

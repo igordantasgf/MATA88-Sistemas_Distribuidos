@@ -2,7 +2,7 @@ import os
 import socket
 import time
 
-from common import MESSAGE_DIVISOR
+from common import MESSAGE_DIVISOR, RG_PATTERN, NAME_PATTERN
 from operations import Operations, operation_message
 
 # Diretórios para armazenar o estado do relógio lógico do cliente e transferencias
@@ -64,6 +64,26 @@ def start_client():
     # 2. Carrega o estado anterior do relógio lógico do cliente
     lamport_clock = load_clock_state(client_socket)
 
+    rg = input("Digite seu rg:\n")
+
+    rg_message = (f'{RG_PATTERN}{rg} {MESSAGE_DIVISOR} {lamport_clock}')
+    client_socket.send(rg_message.encode("utf-8"))
+
+     # Recebe os dados do servirdor
+    data = client_socket.recv(1024)
+    # Decodifica a mensagem e separa o conteúdo da mensagem
+    received_data = data.decode("utf-8").split(MESSAGE_DIVISOR)
+
+    # exibe o que foi enviado do servidor
+    print(received_data[0].strip())
+
+    if received_data[0].strip() != "Bem vindo!":
+        name = input('Por favor digite seu nome:\n')
+
+        name_message = (f'{NAME_PATTERN}{name} {MESSAGE_DIVISOR} {lamport_clock}')
+        client_socket.send(name_message.encode("utf-8"))
+
+
     while True:
         # Incrementa o relógio lógico do cliente
         lamport_clock += 1
@@ -107,6 +127,9 @@ def start_client():
 
         # exibe o que foi enviado do servidor
         print(received_data[0].strip())
+
+        # mostra clock atual do cliente
+        print(f"Clock atual: {lamport_clock}")
 
         # Aguarda um curto período para simular o atraso na rede
         time.sleep(0.1)

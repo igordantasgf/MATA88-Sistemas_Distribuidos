@@ -15,30 +15,18 @@ lamport_clock = 0
 client_id = 0
 
 
-def save_clock_state():
-    print(f"Armazenando time={lamport_clock} no client {client_id}")
-
-    # Salva o estado do relógio lógico do cliente em um arquivo
-    state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
-    with open(state_file_path, "w") as file:
-        file.write(str(lamport_clock))
-
-
-def load_clock_state():
+def load_clock_state(client_socket):
     # Initialization:   When the client starts, it initializes its logical clock.
     #                   This initialization involve setting the logical clock to a value
     #                   greater than the maximum logical time it had before it was closed,
-    #                   loading the previous
-
-    state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
-    try:
-        # Tenta carregar o estado do relógio lógico do cliente a partir do arquivo
-        with open(state_file_path, "r") as file:
-            return int(file.read())
-    except FileNotFoundError:
-        # Se o arquivo não existir, retorna 0
-        print(f"Arquivo do client {client_id} com time-stamp não encontrado")
-        return 0
+    #                   loading the previous  <--- Loading the current server logical clock
+    while(1):
+        server_clock = client_socket.recv(1024).decode("utf-8")
+        if not server_clock:       # <--- criar excessão para falha do recebimento do clock
+            print("Erro ao receber clock do servidor")
+        else:
+            print(f"server clock --> {server_clock}")
+            return int(server_clock)-1
 
 
 def load_server_id(client_socket):
@@ -70,10 +58,11 @@ def start_client():
     client_socket.connect((host, port))
     print(f"Connected to {host}:{port}")
 
+    # 1. Obtém id do cliente para armazenar dados
     load_server_id(client_socket)
 
-    # Carrega o estado anterior do relógio lógico do cliente
-    lamport_clock = load_clock_state()
+    # 2. Carrega o estado anterior do relógio lógico do cliente
+    lamport_clock = load_clock_state(client_socket)
 
     while True:
         # Incrementa o relógio lógico do cliente

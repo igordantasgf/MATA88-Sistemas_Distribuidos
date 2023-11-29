@@ -1,7 +1,7 @@
 - [x] Tratar caso usuário envie valor _NaN_
 - [x] Sacar um valor maior do que o saldo
-- [ ] Vincular com RG e Nome do cliente - **cadastro** ou **login** (consulta ao banco)
+- [x] Vincular com RG e Nome do cliente - **cadastro** ou **login** (consulta ao banco)
 - [x] Feedback do servidor volta ao cliente
-- [ ] Validação da transferência (por RG)
+- [x] Validação da transferência (por RG)
 - [x] Mostrar Saldo
 - [x] Sync dos clocks + <Del>Fila

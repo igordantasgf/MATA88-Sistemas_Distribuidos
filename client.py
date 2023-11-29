@@ -95,15 +95,17 @@ def start_client():
             # Obtém a mensagem da operação selecionada pelo usuário
             operation_message_input = operation_message(selected_operation)
             value = input(operation_message_input)
+            recipient_account = None
+
+            if selected_operation is Operations.TRANSFER:
+                recipient_account = input("Digite a conta do destinatário: ")
 
         except Exception:
             print("Operação inválida, tente novamente.\n")
             continue
 
         # Envia a string com o relógio lógico para o servidor
-        message_with_clock = (
-            f"{operation} {MESSAGE_DIVISOR} {value} {MESSAGE_DIVISOR} {lamport_clock}"
-        )
+        message_with_clock = f"{operation} {MESSAGE_DIVISOR} {value} {MESSAGE_DIVISOR} {recipient_account} {MESSAGE_DIVISOR} {lamport_clock} "
         client_socket.send(message_with_clock.encode("utf-8"))
 
         # Aguarda um curto período para simular o atraso na rede

@@ -55,7 +55,7 @@ def handle_client(client_socket, client_address, client_id):
 
                 bank = Bank()
 
-                bank.perform_operation(
+                message = bank.perform_operation(
                     client_id, selected_operation, value, recipient_account
                 )
 
@@ -64,8 +64,9 @@ def handle_client(client_socket, client_address, client_id):
 
             # Adiciona a mensagem à lista com timestamp e relógio lógico de Lamport
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            message_with_timestamp = f"{timestamp} | Lamport Clock: {lamport_clock} | {received_data[0].strip()}"
+            message_with_timestamp = f"{message} {MESSAGE_DIVISOR} {timestamp} {MESSAGE_DIVISOR} Lamport Clock: {lamport_clock} {MESSAGE_DIVISOR}  | {received_data[0].strip()}"
             messages.append(message_with_timestamp)
+            client_socket.send(message_with_timestamp.encode("utf-8"))
             print(f"Received: {message_with_timestamp} from {client_address}")
 
         except Exception as e:

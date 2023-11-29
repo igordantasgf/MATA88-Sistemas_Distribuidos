@@ -20,13 +20,13 @@ def load_clock_state(client_socket):
     #                   This initialization involve setting the logical clock to a value
     #                   greater than the maximum logical time it had before it was closed,
     #                   loading the previous  <--- Loading the current server logical clock
-    while(1):
+    while 1:
         server_clock = client_socket.recv(1024).decode("utf-8")
-        if not server_clock:       # <--- criar excessão para falha do recebimento do clock
+        if not server_clock:  # <--- criar excessão para falha do recebimento do clock
             print("Erro ao receber clock do servidor")
         else:
             print(f"server clock --> {server_clock}")
-            return int(server_clock)-1
+            return int(server_clock) - 1
 
 
 def load_server_id(client_socket):
@@ -87,6 +87,11 @@ def start_client():
             else:
                 operation_message_input = operation_message(selected_operation)
                 value = input(operation_message_input)
+
+                # Valida o valor digitado pelo usuário, ele deve ser um número e maior do que zero
+                while not value.isdigit() or int(value) <= 0:
+                    value = input("Digige um valor válido: ")
+
                 recipient_account = None
 
             if selected_operation is Operations.TRANSFER:

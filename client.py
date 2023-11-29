@@ -109,9 +109,6 @@ def start_client():
         # Aguarda um curto período para simular o atraso na rede
         time.sleep(0.1)
 
-    # Salva o estado do relógio lógico do cliente antes de fechar a conexão
-    save_clock_state()
-
     # Fecha a conexão com o servidor
     client_socket.close()
 

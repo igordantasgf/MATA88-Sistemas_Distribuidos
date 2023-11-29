@@ -1,10 +1,11 @@
+import os
 import socket
 import threading
 from datetime import datetime
-import time
-import os
-from common import MESSAGE_DIVISOR
 
+from banco import Banco
+
+from common import MESSAGE_DIVISOR
 from operations import Operations, is_valid_operation
 
 # Diretório para armazenar os estados dos relógios lógicos dos clientes
@@ -19,11 +20,13 @@ client_states = {}
 # Relógio lógico do servidor
 lamport_clock = 0
 
+
 def save_clock_state(client_id, clock):
     # Salva o estado do relógio lógico do cliente em um arquivo
     state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
     with open(state_file_path, "w+") as file:
         file.write(str(clock))
+
 
 def load_clock_state(client_id):
     state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
@@ -34,14 +37,13 @@ def load_clock_state(client_id):
     except FileNotFoundError:
         # Se o arquivo não existir, retorna 0
         return 0
-    
+
 
 def handle_client(client_socket, client_address, client_id):
     global lamport_clock
 
     # Envia o identificador server-side do cliente para ele
-    client_socket.send(client_id.encode('utf-8'))
-
+    client_socket.send(client_id.encode("utf-8"))
 
     while True:
         try:
@@ -49,9 +51,9 @@ def handle_client(client_socket, client_address, client_id):
             data = client_socket.recv(1024)
             if not data:
                 break
-                
-            # Decodifica a mensagem e separa o conteúdo da mensagem 
-            received_data = data.decode('utf-8').split( MESSAGE_DIVISOR)
+
+            # Decodifica a mensagem e separa o conteúdo da mensagem
+            received_data = data.decode("utf-8").split(MESSAGE_DIVISOR)
 
             # extrai o relógio lógico do cliente, sempre é enviado no final do conteúdo
             client_lamport_clock = int(received_data[-1].strip())
@@ -63,10 +65,8 @@ def handle_client(client_socket, client_address, client_id):
                 # Caso a operação seja válida extrai o valor da operação
                 value = int(received_data[1].strip())
             else:
-                print(f"Operação inválida, tente novamente")
+                print("Operação inválida, tente novamente")
                 continue
-
-
 
             # Atualiza o relógio lógico do servidor
             lamport_clock = max(lamport_clock, client_lamport_clock) + 1
@@ -77,15 +77,28 @@ def handle_client(client_socket, client_address, client_id):
             messages.append(message_with_timestamp)
             print(f"Received: {message_with_timestamp} from {client_address}")
 
-        except:
+            operation, value = received_data[0].strip(), received_data[1].strip()
+
+            banco = Banco()
+
+            if received_data[0].strip() == "1":
+                banco.update_money(client_id, value)
+            elif received_data[0].strip() == "2":
+                banco.update_money(client_id, f"-{value}")
+            # elif received_data[0].strip() == '3':
+            #     banco.deposit_money(client_id, 'value')
+
+        except Exception as e:
+            print(e)
             # Handle the exception (e.g., print an error message)
-            print(f"Algum erro aconteceu")
+            print("Algum erro aconteceu")
 
     # Salva o estado do relógio lógico do cliente antes de fechar a conexão
     save_clock_state(client_id, client_lamport_clock)
 
     # Fecha a conexão com o cliente
     client_socket.close()
+
 
 def start_server():
     global lamport_clock
@@ -94,7 +107,7 @@ def start_server():
     os.makedirs(CLIENT_STATES_DIR, exist_ok=True)
 
     # Configurações do servidor
-    host = '127.0.0.1'
+    host = "127.0.0.1"
     port = 12345
 
     # Cria um socket TCP
@@ -117,8 +130,11 @@ def start_server():
         client_states[client_id] = load_clock_state(addr[1])
 
         # Inicia a thread do cliente
-        client_handler = threading.Thread(target=handle_client, args=(client_socket, addr, client_id))
+        client_handler = threading.Thread(
+            target=handle_client, args=(client_socket, addr, client_id)
+        )
         client_handler.start()
+
 
 if __name__ == "__main__":
     start_server()

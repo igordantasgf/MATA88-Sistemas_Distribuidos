@@ -35,15 +35,47 @@ class Bank:
     def perform_operation(self, client_id, operation, amount, recipient_account):
         match operation:
             case Operations.DEPOSIT:
-                self.update_money(client_id, amount)
+                return self.deposit_money(client_id, amount)
             case Operations.WITHDRAW:
-                self.update_money(client_id, amount * -1)
+                return self.withdraw_money(client_id, amount)
             case Operations.TRANSFER:
-                self.transfer_money(client_id, amount, recipient_account)
+                return self.transfer_money(client_id, amount, recipient_account)
             case _:
                 return print("Operação inválida, tente novamente")
 
-    def update_money(self, client_id, amount):
+    def withdraw_money(self, client_id, amount):
+        # Read user data
+        user_data = self.read_user_data()
+
+        # Find the user in the data
+        user_index = next(
+            (
+                index
+                for (index, user) in enumerate(user_data)
+                if user["client_id"] == client_id
+            ),
+            None,
+        )
+
+        if user_index is not None:
+            balance = float(user_data[user_index]["balance"])
+            if balance < float(amount):
+                return f"Saldo insuficiente para o saque. Saldo disponível: {balance} reais"
+
+            # Update user balance
+            user_data[user_index]["balance"] = str(balance - float(amount))
+        else:
+            return "Conta do usuário não encontrada, por favor faça um depósito para abrir sua conta"
+
+        # Write the updated user data back to the CSV file
+        self.write_user_data(user_data)
+
+        print(
+            f"Update successfully. New balance for {client_id}: {user_data[-1]['balance']}"
+        )
+        return f"Saque de {amount} reais realizado com sucesso. Novo saldo: {user_data[-1]['balance']} reais"
+
+    def deposit_money(self, client_id, amount):
         # Read user data
         user_data = self.read_user_data()
 
@@ -73,6 +105,7 @@ class Bank:
         print(
             f"Update successfully. New balance for {client_id}: {user_data[-1]['balance']}"
         )
+        return f"Depósito de {amount} reais realizado com sucesso. Novo saldo: {user_data[-1]['balance']} reais"
 
     def transfer_money(self, client_id, amount, recipient_account):
         # Read user data
@@ -98,21 +131,25 @@ class Bank:
         )
 
         if user_index is not None and recipient_index is not None:
+            balance = float(user_data[user_index]["balance"])
+            if balance < float(amount):
+                return f"Saldo insuficiente para a transferência. Saldo disponível: {balance} reais"
+
             # Update user balance
-            user_data[user_index]["balance"] = str(
-                float(user_data[user_index]["balance"]) - float(amount)
-            )
+            user_data[user_index]["balance"] = str(balance - float(amount))
 
             user_data[recipient_index]["balance"] = str(
                 float(user_data[recipient_index]["balance"]) + float(amount)
             )
             # Write the updated user data back to the CSV file
             self.write_user_data(user_data)
+            return "Transferência de {amount} reais realizada para a conta {recipient_account} com sucesso. Novo saldo:  reais"
+
         elif user_index is None:
-            return "Conta do usuário não encontrada"
+            return "Conta do usuário não encontrada. Por favor, faça um depósito para abrir sua conta"
 
         elif recipient_account is None:
-            return "Conta do destinatário não encontrada"
+            return "Conta do destinatário não encontrada. Verifique os digitos e tente novamente "
 
         print(
             f"Update successfully. New balance for {client_id}: {user_data[-1]['balance']}"

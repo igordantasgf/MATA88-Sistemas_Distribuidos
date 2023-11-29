@@ -108,6 +108,15 @@ def start_client():
         message_with_clock = f"{operation} {MESSAGE_DIVISOR} {value} {MESSAGE_DIVISOR} {recipient_account} {MESSAGE_DIVISOR} {lamport_clock} "
         client_socket.send(message_with_clock.encode("utf-8"))
 
+        # Recebe os dados do servirdor
+        data = client_socket.recv(1024)
+        # Decodifica a mensagem e separa o conteúdo da mensagem
+        received_data = data.decode("utf-8").split(MESSAGE_DIVISOR)
+
+        # exibe o que foi enviado do servidor
+        print(received_data[0].strip())
+        print("\n")
+
         # Aguarda um curto período para simular o atraso na rede
         time.sleep(0.1)
 

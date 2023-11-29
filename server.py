@@ -3,7 +3,7 @@ import socket
 import threading
 from datetime import datetime
 
-from banco import Banco
+from bank import Bank
 
 from common import MESSAGE_DIVISOR
 from operations import Operations, is_valid_operation
@@ -62,11 +62,17 @@ def handle_client(client_socket, client_address, client_id):
             operation = int(received_data[0].strip())
             if is_valid_operation(operation):
                 selected_operation = Operations(operation)
-                # Caso a operação seja válida extrai o valor da operação
-                value = int(received_data[1].strip())
-            else:
-                print("Operação inválida, tente novamente")
-                continue
+                # Caso a operação seja válida extrai o valor da operação e a conta do destinário  em caso de transferência
+                value, recipient_account = (
+                    int(received_data[1].strip()),
+                    received_data[2].strip(),
+                )
+
+                bank = Bank()
+
+                bank.perform_operation(
+                    client_id, selected_operation, value, recipient_account
+                )
 
             # Atualiza o relógio lógico do servidor
             lamport_clock = max(lamport_clock, client_lamport_clock) + 1
@@ -76,17 +82,6 @@ def handle_client(client_socket, client_address, client_id):
             message_with_timestamp = f"{timestamp} | Lamport Clock: {lamport_clock} | {received_data[0].strip()}"
             messages.append(message_with_timestamp)
             print(f"Received: {message_with_timestamp} from {client_address}")
-
-            operation, value = received_data[0].strip(), received_data[1].strip()
-
-            banco = Banco()
-
-            if received_data[0].strip() == "1":
-                banco.update_money(client_id, value)
-            elif received_data[0].strip() == "2":
-                banco.update_money(client_id, f"-{value}")
-            # elif received_data[0].strip() == '3':
-            #     banco.deposit_money(client_id, 'value')
 
         except Exception as e:
             print(e)

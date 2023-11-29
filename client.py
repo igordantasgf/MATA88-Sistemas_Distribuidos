@@ -24,9 +24,10 @@ def load_clock_state(client_socket):
         server_clock = client_socket.recv(1024).decode("utf-8")
         if not server_clock:  # <--- criar excessão para falha do recebimento do clock
             print("Erro ao receber clock do servidor")
+            return 0
         else:
             print(f"server clock --> {server_clock}")
-            return int(server_clock) - 1
+            return int(server_clock)
 
 
 def load_server_id(client_socket):

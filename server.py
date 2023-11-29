@@ -21,29 +21,14 @@ client_states = {}
 lamport_clock = 0
 
 
-def save_clock_state(client_id, clock):
-    # Salva o estado do relógio lógico do cliente em um arquivo
-    state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
-    with open(state_file_path, "w+") as file:
-        file.write(str(clock))
-
-
-def load_clock_state(client_id):
-    state_file_path = os.path.join(CLIENT_STATES_DIR, f"client_{client_id}_state.txt")
-    try:
-        # Tenta carregar o estado do relógio lógico do cliente a partir do arquivo
-        with open(state_file_path, "r") as file:
-            return int(file.read())
-    except FileNotFoundError:
-        # Se o arquivo não existir, retorna 0
-        return 0
-
-
 def handle_client(client_socket, client_address, client_id):
     global lamport_clock
 
-    # Envia o identificador server-side do cliente para ele
+    # 1. Envia o identificador server-side do cliente para ele
     client_socket.send(client_id.encode("utf-8"))
+
+    # 2. Envia o atual clock para o cliente
+    client_socket.send(str(lamport_clock).encode("utf-8"))
 
     while True:
         try:
@@ -88,15 +73,12 @@ def handle_client(client_socket, client_address, client_id):
             # Handle the exception (e.g., print an error message)
             print("Algum erro aconteceu")
 
-    # Salva o estado do relógio lógico do cliente antes de fechar a conexão
-    save_clock_state(client_id, client_lamport_clock)
 
     # Fecha a conexão com o cliente
     client_socket.close()
 
 
 def start_server():
-    global lamport_clock
 
     # Cria o diretório para armazenar os estados dos relógios lógicos dos clientes
     os.makedirs(CLIENT_STATES_DIR, exist_ok=True)
@@ -122,7 +104,6 @@ def start_server():
 
         # Gera um ID único para o cliente com base no endereço e porta
         client_id = f"{addr[1]}"
-        client_states[client_id] = load_clock_state(addr[1])
 
         # Inicia a thread do cliente
         client_handler = threading.Thread(

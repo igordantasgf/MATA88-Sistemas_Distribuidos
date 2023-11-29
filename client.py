@@ -66,10 +66,10 @@ def start_client():
 
     rg = input("Digite seu rg:\n")
 
-    rg_message = (f'{RG_PATTERN}{rg} {MESSAGE_DIVISOR} {lamport_clock}')
+    rg_message = f"{RG_PATTERN}{rg} {MESSAGE_DIVISOR} {lamport_clock}"
     client_socket.send(rg_message.encode("utf-8"))
 
-     # Recebe os dados do servirdor
+    # Recebe os dados do servirdor
     data = client_socket.recv(1024)
     # Decodifica a mensagem e separa o conteúdo da mensagem
     received_data = data.decode("utf-8").split(MESSAGE_DIVISOR)
@@ -78,11 +78,10 @@ def start_client():
     print(received_data[0].strip())
 
     if received_data[0].strip() != "Bem vindo!":
-        name = input('Por favor digite seu nome:\n')
+        name = input("Por favor digite seu nome:\n")
 
-        name_message = (f'{NAME_PATTERN}{name} {MESSAGE_DIVISOR} {lamport_clock}')
+        name_message = f"{NAME_PATTERN}{name} {MESSAGE_DIVISOR} {lamport_clock}"
         client_socket.send(name_message.encode("utf-8"))
-
 
     while True:
         # Incrementa o relógio lógico do cliente
@@ -100,6 +99,7 @@ def start_client():
             # Obtém a operação selecionada pelo usuário
             operation = int(message)
             selected_operation = Operations(operation)
+            recipient_account = None
 
             # Obtém a mensagem da operação selecionada pelo usuário
             if selected_operation == Operations.CHECK_BALANCE:
@@ -111,8 +111,6 @@ def start_client():
                 # Valida o valor digitado pelo usuário, ele deve ser um número e maior do que zero
                 while not value.isdigit() or int(value) <= 0:
                     value = input("Digite um valor válido: ")
-
-                recipient_account = None
 
             if selected_operation is Operations.TRANSFER:
                 recipient_account = input("Digite a conta do destinatário: ")

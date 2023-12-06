@@ -16,10 +16,6 @@ client_id = 0
 
 
 def load_clock_state(client_socket):
-    # Initialization:   When the client starts, it initializes its logical clock.
-    #                   This initialization involve setting the logical clock to a value
-    #                   greater than the maximum logical time it had before it was closed,
-    #                   loading the previous  <--- Loading the current server logical clock
     while 1:
         server_clock = client_socket.recv(1024).decode("utf-8")
         if not server_clock:  # <--- criar excessão para falha do recebimento do clock
